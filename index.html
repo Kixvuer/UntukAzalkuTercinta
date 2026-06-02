@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>🌸 Azalia VS Fitokimia | PopQuiz Elite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* SEMUA TEKS PUTIH (force white) */
+        body, .screen, .question-text, .stats, .hero p, .hero .subtitle, footer, .powerup-badge, .modal-content, .minigame-box p, .minigame-box input, .minigame-box button {
+            color: #ffffff !important;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #1e2a1a, #0a1208);
+            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Partikel */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, #f3e5c0, #d4af37);
+            border-radius: 50%;
+            animation: floatGlow linear infinite;
+            opacity: 0.3;
+        }
+        @keyframes floatGlow {
+            0% { transform: translateY(100vh) rotate(0deg) scale(0.8); opacity: 0; }
+            50% { opacity: 0.7; transform: translateY(50vh) rotate(180deg) scale(1.2); }
+            100% { transform: translateY(-20vh) rotate(360deg) scale(0.6); opacity: 0; }
+        }
+
+        .screen {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 800px;
+            background: rgba(18, 28, 20, 0.92);
+            backdrop-filter: blur(18px);
+            border-radius: 64px;
+            padding: 1.6rem;
+            box-shadow: 0 30px 50px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,245,200,0.15);
+            transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            border: 1px solid rgba(220, 190, 100, 0.6);
+        }
+        .screen:not(.active) {
+            display: none;
+        }
+
+        .hero {
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 2.8rem;
+            background: linear-gradient(135deg, #ffe5b4, #e6c37e, #c9a03d);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent !important;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        .hero .badge {
+            background: rgba(44, 70, 34, 0.8);
+            display: inline-block;
+            padding: 6px 20px;
+            border-radius: 80px;
+            font-size: 0.85rem;
+            margin: 12px 0;
+        }
+        button {
+            background: linear-gradient(100deg, #82642e, #543d18);
+            border: none;
+            padding: 12px 28px;
+            margin: 8px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: 0.1s linear;
+            box-shadow: 0 5px 0 #2f210c;
+        }
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #2f210c;
+        }
+        button:disabled {
+            opacity: 0.45;
+            transform: none;
+            cursor: not-allowed;
+        }
+        .quiz-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            background: #0a1a0ccc;
+            padding: 10px 20px;
+            border-radius: 60px;
+            font-weight: bold;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .question-card {
+            background: #1b2f1fdd;
+            border-radius: 48px;
+            padding: 1.6rem;
+            border-left: 6px solid #f3cd81;
+        }
+        .question-text {
+            font-size: 1.28rem;
+            line-height: 1.4;
+            margin-bottom: 1.2rem;
+        }
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .options-grid button {
+            background: #2c4632;
+            text-align: left;
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            box-shadow: none;
+            border-radius: 100px;
+            color: white;
+        }
+        .options-grid button:active {
+            transform: scale(0.98);
+            background: #3e6040;
+        }
+        .powerup-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 8px;
+            background: rgba(12, 29, 18, 0.7);
+            padding: 8px 12px;
+            border-radius: 80px;
+        }
+        .powerup-badge {
+            background: #261f12;
+            border-radius: 50px;
+            padding: 5px 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: 1px solid #a98442;
+        }
+        .timer {
+            font-size: 1.5rem;
+            font-weight: bold;
+            font-family: monospace;
+            background: #00000066;
+            padding: 4px 16px;
+            border-radius: 40px;
+        }
+        .shake {
+            animation: shake 0.25s ease-in-out;
+        }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+        .modal {
+            display: none;
+            position: fixed;
+            top:0;left:0;width:100%;height:100%;
+            background: rgba(0,0,0,0.92);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #292e1f;
+            max-width: 90%;
+            width: 500px;
+            margin: 20px;
+            padding: 28px;
+            border-radius: 64px;
+            text-align: center;
+            border: 1px solid #e6bc72;
+        }
+        .minigame-box {
+            background: #2a5a2a;
+            border-radius: 48px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .minigame-box input {
+            width: 90%;
+            padding: 14px;
+            font-size: 1.1rem;
+            border-radius: 60px;
+            border: 2px solid #e6bc72;
+            background: #1f3a2a;
+            color: white;
+            text-align: center;
+            margin: 15px 0;
+        }
+        .minigame-box input::placeholder {
+            color: #dddd88;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 11px;
+            opacity: 0.8;
+        }
+        @media (max-width: 600px) {
+            .screen { padding: 1rem; }
+            .question-text { font-size: 1rem; }
+            button { padding: 10px 14px; font-size: 0.85rem; }
+            .hero h1 { font-size: 2rem; }
+        }
+        .question-animate {
+            animation: bounceSoft 0.2s ease-out;
+        }
+        @keyframes bounceSoft {
+            0% { transform: scale(0.98); opacity: 0.9; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+<div id="particles"></div>
+
+<!-- LANDING PAGE -->
+<div id="landing-page" class="screen active">
+    <div class="hero">
+        <h1>🌸 AZALIA VS FITOKIMIA 🌿</h1>
+        <div class="subtitle">——  Perang Pengetahuan Metabolit Sekunder  ——</div>
+        <div class="badge">⚔️ BANK SOAL SUPER BESAR + POWERUP DROP ⚔️</div>
+        <p>Selamat datang, Putri Azalia! Taklukkan fitokimia dengan menjawab 15 soal. Setiap jawaban salah diberi penjelasan panjang.<br>
+        <strong>✨ Setiap 3 jawaban benar</strong> kamu akan mendapat <strong>powerup random</strong>! Kumpulkan dan gunakan di saat kritis.<br>
+        <strong>🍃 Mini game spesial:</strong> Ketik "Aku Cinta Farhan" untuk mendapatkan nyawa + powerup ekstra!</p>
+        <button id="start-btn">🌱 MULAI PERTEMPURAN 🌱</button>
+        <footer>🎵 lagu ceria | Powerup: Freeze, 50:50, +Nyawa, +15 detik, 2x Poin</footer>
+    </div>
+</div>
+
+<!-- QUIZ AREA -->
+<div id="quiz-area" class="screen">
+    <div class="quiz-container">
+        <div class="stats">
+            <span id="score-display">🏆 0</span>
+            <span id="lives-display">❤️❤️❤️</span>
+            <span id="timer-display" class="timer">⏱️ 30s</span>
+        </div>
+        <div class="question-card" id="question-card">
+            <div class="question-text" id="question-text">⚔️ Memuat gudang soal...</div>
+            <div class="options-grid" id="options-container"></div>
+        </div>
+        <div class="powerup-bar" id="powerup-bar"></div>
+        <div class="powerups">
+            <button id="btn-freeze">❄️ FREEZE</button>
+            <button id="btn-fifty">🎯 50:50</button>
+        </div>
+        <footer>✨ Setiap 5 soal = Mini Game Mengetik ➕ +1 Nyawa + powerup random</footer>
+    </div>
+</div>
+
+<!-- MINIGAME: KETIK KALIMAT -->
+<div id="minigame-area" class="screen">
+    <h3>💌 MINI GAME: TULIS KALIMAT RAHASIA 💌</h3>
+    <p>Ketik kalimat di bawah ini dengan tepat untuk mendapatkan hadiah!</p>
+    <div class="minigame-box">
+        <p style="font-size: 1.5rem; font-weight: bold; background: #3a2a18; padding: 10px; border-radius: 40px;">"Aku Cinta Farhan"</p>
+        <input type="text" id="magic-phrase" placeholder="Ketik di sini..." autocomplete="off">
+        <div>
+            <span id="minigame-timer">⏱️ 8s</span>
+            <button id="submit-phrase">✨ Kirim ✨</button>
+        </div>
+        <p style="font-size: 0.8rem; margin-top: 10px;">(tanpa tanda kutip, huruf besar/kecil bebas)</p>
+    </div>
+</div>
+
+<!-- GAME OVER -->
+<div id="game-over-screen" class="screen">
+    <div style="text-align:center">
+        <h2 id="go-title">🏁 GAME OVER</h2>
+        <p id="go-score">Skor Akhir: 0</p>
+        <p id="go-stats">✅ Jawaban Benar: 0 / 15</p>
+        <p id="go-message" style="margin: 15px 0; font-size: 1.3rem;"></p>
+        <button id="home-btn">🏠 Kembali ke Istana</button>
+    </div>
+</div>
+
+<!-- MODAL EDUKASI -->
+<div id="explanation-modal" class="modal">
+    <div class="modal-content">
+        <h3 id="modal-title">📘 ANALISIS FITOKIMIA</h3>
+        <div style="font-size: 2.5rem;">🌿</div>
+        <p id="explanation-text" style="margin-top: 12px; line-height: 1.5;"></p>
+        <button id="btn-next-modal">Lanjut Bertempur</button>
+    </div>
+</div>
+
+<audio id="bgm" loop preload="auto"></audio>
+
+<script>
+    // ======================= BANK SOAL + PENJELASAN PANJANG =======================
+    const CORE_QUESTIONS = [
+        { q: "Reaksi warna merah, jingga, atau ungu pada uji Shinoda (Mg + HCl pekat) menandakan senyawa?", 
+          o: ["Flavonoid", "Alkaloid", "Tanin", "Saponin"], 
+          a: "Flavonoid", 
+          ex: "Uji Shinoda menggunakan serbuk magnesium dan asam klorida pekat. Reaksi ini mereduksi gugus karbonil pada flavonoid menjadi garam flavilium yang berwarna merah, ungu, atau jingga. Warna yang dihasilkan tergantung pada struktur flavonoid, misalnya flavonol menghasilkan warna merah tua, sedangkan flavon menghasilkan warna jingga kemerahan. Uji ini spesifik untuk senyawa flavonoid." },
+        { q: "Pereaksi Dragendorff (Bi(NO3)3 + KI) digunakan untuk mendeteksi golongan?", 
+          o: ["Alkaloid", "Kuinon", "Kumarin", "Terpenoid"], 
+          a: "Alkaloid", 
+          ex: "Dragendorff adalah reagen yang mengandung kalium iodobismutat (K[BiI4]). Ion BiI4- akan membentuk kompleks berwarna jingga hingga coklat dengan atom nitrogen basa pada alkaloid. Reaksi ini sangat sensitif dan digunakan secara luas dalam kromatografi untuk mendeteksi alkaloid meskipun kadang terjadi false positive dengan senyawa lain yang mengandung nitrogen seperti protein dan beberapa lakton." },
+        { q: "Tanin yang dapat dihidrolisis dengan asam encer menghasilkan gula dan asam galat disebut?", 
+          o: ["Gallotannin", "Catechin tannin", "Flavonoid", "Antosianin"], 
+          a: "Gallotannin", 
+          ex: "Tanin terhidrolisis (hidrolizable tannin) terdiri dari dua subkelas: gallotannin dan ellagitannin. Gallotannin tersusun dari inti glukosa yang diesterifikasi dengan molekul asam galat. Ketika dihidrolisis dengan asam, ikatan ester putus dan melepaskan glukosa serta asam galat. Tanin jenis ini banyak ditemukan pada tanaman seperti rhubarb, teh, dan kayu manis." },
+        { q: "Kerangka dasar kumarin adalah?", 
+          o: ["Benzopiron (1-benzopyran-2-one)", "Kromon", "Isoflavon", "Antrasen"], 
+          a: "Benzopiron (1-benzopyran-2-one)", 
+          ex: "Kumarin secara kimia adalah lakton dari asam o-hidroksisinamat. Kerangka dasarnya adalah 1-benzopyran-2-one (atau 2H-chromen-2-one). Senyawa ini memiliki bau harum seperti vanila dan banyak ditemukan pada tanaman seperti lavender, semanggi, kayu manis, dan buah tonka. Kumarin juga digunakan sebagai prekursor antikoagulan (warfarin) yang banyak dipakai dalam pengobatan." },
+        { q: "Antrakuinon dengan aktivitas pencahar ditemukan dalam?", 
+          o: ["Aloe vera & Cassia", "Teh hijau", "Kunyit", "Jahe"], 
+          a: "Aloe vera & Cassia", 
+          ex: "Antrakuinon seperti emodin, aloe-emodin, dan rhein memiliki efek pencahar dengan cara merangsang peristaltik usus besar melalui peningkatan sekresi air dan elektrolit. Tanaman seperti Aloe vera (lidah buaya), Cassia angustifolia (senna), dan Rheum palmatum (rhubarb) kaya akan senyawa ini. Efek pencahar muncul dalam 6-12 jam setelah konsumsi, namun penggunaan jangka panjang tidak dianjurkan." },
+        { q: "Monoterpenoid tersusun dari berapa unit isoprena?", 
+          o: ["2 unit", "1 unit", "3 unit", "4 unit"], 
+          a: "2 unit", 
+          ex: "Terpenoid dibangun dari unit isoprena (C5H8). Monoterpenoid terdiri dari dua unit isoprena sehingga rumus molekulnya C10H16. Contoh terkenal adalah mentol (dari peppermint), limonene (dari jeruk), dan pinene (dari resin pinus). Monoterpenoid bersifat mudah menguap dan memberikan aroma khas pada tanaman, serta banyak digunakan dalam industri parfum dan obat-obatan." },
+        { q: "Lignan adalah hasil dimerisasi dua unit?", 
+          o: ["Fenilpropanoid (C6-C3)", "Asetat", "Mevalonat", "Glukosa"], 
+          a: "Fenilpropanoid (C6-C3)", 
+          ex: "Lignan terbentuk melalui jalur fenilpropanoid, yaitu dimerisasi oksidatif dua unit C6-C3 (biasanya coniferyl alkohol). Ikatan yang terbentuk paling umum adalah β-β' (C8-C8') yang menghasilkan kerangka dibenzilbutana. Lignan memiliki berbagai aktivitas biologis seperti antikanker (podophyllotoxin), antioksidan, antivirus, dan fitoestrogen. Banyak ditemukan pada biji rami, wijen, dan sereal." },
+        { q: "Senyawa fenolik asam galat (3,4,5-trihidroksibenzoat) banyak ditemukan dalam?", 
+          o: ["Tanin terhidrolisis", "Lignin", "Kuinon", "Terpen"], 
+          a: "Tanin terhidrolisis", 
+          ex: "Asam galat adalah asam fenolat sederhana dengan tiga gugus hidroksil. Senyawa ini merupakan unit monomer penyusun tanin terhidrolisis (gallotannin). Asam galat juga memiliki aktivitas antioksidan kuat karena kemampuannya menangkap radikal bebas. Dalam industri, asam galat digunakan sebagai bahan baku pembuatan propil galat (pengawet makanan) dan juga ditemukan pada teh, anggur merah, dan berbagai buah-buahan." },
+        { q: "Uji Liebermann-Burchard (asetat anhidrida + H2SO4) menghasilkan warna hijau untuk?", 
+          o: ["Steroid", "Triterpenoid", "Flavonoid", "Kumarin"], 
+          a: "Steroid", 
+          ex: "Reaksi Liebermann-Burchard digunakan untuk membedakan steroid dan triterpenoid. Steroid (contoh: kolesterol, sitosterol) akan menghasilkan warna hijau hingga biru-hijau karena reaksi dehidrasi dan pembentukan ikatan rangkap terkonjugasi. Triterpenoid (contoh: asam oleanolat) menghasilkan warna merah hingga ungu. Perbedaan warna disebabkan oleh jumlah dan posisi ikatan rangkap pada kerangka siklik." }
+    ];
+    // Bangun bank 120+ soal
+    let MASTER_BANK = [];
+    for (let i = 0; i < 6; i++) {
+        MASTER_BANK.push(...CORE_QUESTIONS.map(q => ({ ...q, uid: Math.random() })));
+    }
+    MASTER_BANK = MASTER_BANK.sort(() => Math.random() - 0.5);
+    
+    // ========== STATE GAME ==========
+    let currentQuestion = null;
+    let currentRound = 0;
+    const TOTAL_ROUNDS = 15;
+    let score = 0;
+    let lives = 3;
+    let timerInterval = null;
+    let timeLeft = 30;
+    let minigameActive = false;
+    let mgTimerInterval = null;
+    let justPlayedMini = false;
+    let loadingLock = false;
+    let correctStreak = 0;
+    
+    let inventory = { freeze: true, fifty: true, extralife: 0, timebonus: 0, doublepoint: 0 };
+    let doubleActive = false;
+    
+    // DOM
+    const questionEl = document.getElementById('question-text');
+    const optionsDiv = document.getElementById('options-container');
+    const scoreSpan = document.getElementById('score-display');
+    const livesSpan = document.getElementById('lives-display');
+    const timerSpan = document.getElementById('timer-display');
+    const freezeBtn = document.getElementById('btn-freeze');
+    const fiftyBtn = document.getElementById('btn-fifty');
+    const powerupBar = document.getElementById('powerup-bar');
+    
+    // Partikel
+    function createParticles() {
+        const container = document.getElementById('particles');
+        if (!container) return;
+        container.innerHTML = '';
+        for (let i = 0; i < 80; i++) {
+            let p = document.createElement('div');
+            p.classList.add('particle');
+            p.style.left = Math.random() * 100 + 'vw';
+            let sz = Math.random() * 18 + 4;
+            p.style.width = p.style.height = sz + 'px';
+            p.style.animationDuration = (Math.random() * 9 + 4) + 's';
+            p.style.animationDelay = Math.random() * 12 + 's';
+            container.appendChild(p);
+        }
+    }
+    createParticles();
+    
+    function updateHUD() {
+        scoreSpan.innerText = `🏆 ${score}`;
+        let hearts = '';
+        for (let i = 0; i < lives; i++) hearts += '❤️';
+        for (let i = lives; i < 3; i++) hearts += '🖤';
+        livesSpan.innerHTML = hearts;
+        renderInventory();
+    }
+    
+    function renderInventory() {
+        powerupBar.innerHTML = '';
+        const items = [
+            { id: 'freeze', icon: '❄️', label: 'Freeze', count: inventory.freeze ? 1 : 0, action: useFreezeInventory },
+            { id: 'fifty', icon: '🎯', label: '50:50', count: inventory.fifty ? 1 : 0, action: useFiftyInventory },
+            { id: 'extralife', icon: '💚', label: '+Nyawa', count: inventory.extralife, action: () => useExtraLife() },
+            { id: 'timebonus', icon: '⏰', label: '+15s', count: inventory.timebonus, action: () => useTimeBonus() },
+            { id: 'doublepoint', icon: '⭐', label: '2x Poin', count: inventory.doublepoint, action: () => useDoublePoint() }
+        ];
+        items.forEach(item => {
+            if (item.count > 0) {
+                const badge = document.createElement('div');
+                badge.className = 'powerup-badge';
+                badge.innerHTML = `${item.icon} ${item.label} ${item.count}`;
+                badge.onclick = item.action;
+                powerupBar.appendChild(badge);
+            }
+        });
+        if (powerupBar.children.length === 0) powerupBar.innerHTML = '<span style="color:#ddbb77; font-size:0.75rem;">✨ belum ada powerup ✨</span>';
+    }
+    
+    function addRandomPowerup() {
+        const types = ['extralife', 'timebonus', 'doublepoint'];
+        const picked = types[Math.floor(Math.random() * types.length)];
+        inventory[picked]++;
+        renderInventory();
+        showFloatingNotif(`🎁 Dapat ${picked === 'extralife' ? '+Nyawa' : picked === 'timebonus' ? '+15 Detik' : '2x Poin'} !`);
+    }
+    
+    function showFloatingNotif(msg) {
+        const notif = document.createElement('div');
+        notif.innerText = msg;
+        notif.style.position = 'fixed'; notif.style.bottom = '20px'; notif.style.left = '20px';
+        notif.style.background = '#3a2a18'; notif.style.color = '#ffeaaf'; notif.style.padding = '6px 14px';
+        notif.style.borderRadius = '40px'; notif.style.zIndex = 300; notif.style.fontSize = '0.8rem';
+        document.body.appendChild(notif);
+        setTimeout(() => notif.remove(), 2000);
+    }
+    
+    function useFreezeInventory() {
+        if (!inventory.freeze) return;
+        inventory.freeze = false;
+        freezeBtn.disabled = true;
+        freezeBtn.style.opacity = '0.5';
+        stopTimer();
+        timerSpan.innerText = '❄️ FREEZE 10s';
+        setTimeout(() => {
+            if (!minigameActive && currentQuestion && lives > 0 && currentRound < TOTAL_ROUNDS) startTimer();
+        }, 10000);
+        renderInventory();
+    }
+    function useFiftyInventory() {
+        if (!inventory.fifty) return;
+        inventory.fifty = false;
+        fiftyBtn.disabled = true;
+        fiftyBtn.style.opacity = '0.5';
+        const btns = document.querySelectorAll('#options-container button');
+        const correct = currentQuestion.a;
+        let hidden = 0;
+        for (let b of btns) {
+            if (b.innerText !== correct && hidden < 2) {
+                b.style.display = 'none';
+                hidden++;
+            }
+        }
+        renderInventory();
+    }
+    function useExtraLife() {
+        if (inventory.extralife <= 0) return;
+        inventory.extralife--;
+        lives = Math.min(lives + 1, 5);
+        updateHUD();
+        new Audio("https://www.myinstants.com/media/sounds/correct-ding.mp3").play().catch(e=>{});
+        showFloatingNotif("💚 +1 Nyawa!");
+    }
+    function useTimeBonus() {
+        if (inventory.timebonus <= 0) return;
+        inventory.timebonus--;
+        if (timerInterval) {
+            timeLeft += 15;
+            timerSpan.innerText = `⏱️ ${timeLeft}s`;
+        }
+        renderInventory();
+        new Audio("https://www.myinstants.com/media/sounds/correct-ding.mp3").play().catch(e=>{});
+        showFloatingNotif("⏰ +15 Detik!");
+    }
+    function useDoublePoint() {
+        if (inventory.doublepoint <= 0) return;
+        inventory.doublepoint--;
+        doubleActive = true;
+        renderInventory();
+        showFloatingNotif("⭐ Double Point aktif untuk jawaban benar berikutnya!");
+    }
+    
+    function stopTimer() { if(timerInterval) clearInterval(timerInterval); timerInterval = null; }
+    function startTimer() {
+        stopTimer();
+        if (minigameActive) return;
+        timerSpan.innerText = `⏱️ ${timeLeft}s`;
+        timerInterval = setInterval(() => {
+            if (minigameActive) return;
+            timeLeft--;
+            timerSpan.innerText = `⏱️ ${timeLeft}s`;
+            if (timeLeft <= 0) {
+                stopTimer();
+                handleWrong('⏰ WAKTU HABIS!', currentQuestion?.ex || 'Tidak ada penjelasan', currentQuestion?.a || '?');
+            }
+        }, 1000);
+    }
+    
+    function getQuestion() {
+        return { ...MASTER_BANK[currentRound % MASTER_BANK.length] };
+    }
+    
+    async function loadQuestion() {
+        if (loadingLock) return;
+        loadingLock = true;
+        if (currentRound >= TOTAL_ROUNDS || lives <= 0) {
+            gameOver();
+            loadingLock = false;
+            return;
+        }
+        if (currentRound > 0 && currentRound % 5 === 0 && !justPlayedMini) {
+            loadingLock = false;
+            startTypingMinigame();
+            return;
+        }
+        justPlayedMini = false;
+        stopTimer();
+        questionEl.innerHTML = `📜 Memuat soal... (${currentRound+1}/${TOTAL_ROUNDS})`;
+        optionsDiv.innerHTML = '<button disabled>⏳ Menyiapkan...</button>';
+        currentQuestion = getQuestion();
+        document.getElementById('question-card').classList.remove('question-animate');
+        void document.getElementById('question-card').offsetWidth;
+        document.getElementById('question-card').classList.add('question-animate');
+        questionEl.innerHTML = `🌺 [Pertarungan ${currentRound+1}/${TOTAL_ROUNDS}]<br>${currentQuestion.q}`;
+        optionsDiv.innerHTML = '';
+        const shuffled = [...currentQuestion.o].sort(() => Math.random() - 0.5);
+        shuffled.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt);
+            optionsDiv.appendChild(btn);
+        });
+        startTimer();
+        loadingLock = false;
+    }
+    
+    function checkAnswer(selected) {
+        if (loadingLock || minigameActive) return;
+        stopTimer();
+        if (selected === currentQuestion.a) {
+            new Audio("https://www.myinstants.com/media/sounds/correct-ding.mp3").play().catch(e=>{});
+            let gain = 100;
+            if (doubleActive) { gain = 200; doubleActive = false; }
+            score += gain;
+            currentRound++;
+            correctStreak++;
+            if (correctStreak >= 3) { addRandomPowerup(); correctStreak = 0; }
+            updateHUD();
+            loadQuestion();
+        } else {
+            new Audio("https://www.myinstants.com/media/sounds/wrong-buzzer.mp3").play().catch(e=>{});
+            correctStreak = 0;
+            handleWrong('❌ SENYAWA TERLEWATKAN!', currentQuestion.ex, currentQuestion.a);
+        }
+    }
+    
+    function handleWrong(title, explanation, correctAnswer) {
+        lives--;
+        updateHUD();
+        document.getElementById('modal-title').innerHTML = title;
+        document.getElementById('explanation-text').innerHTML = `<strong>📘 Analisis Fitokimia:</strong><br><br>${explanation}<br><br>✅ <strong>Jawaban Benar:</strong> ${correctAnswer}`;
+        document.getElementById('explanation-modal').style.display = 'flex';
+        if (lives <= 0) document.getElementById('btn-next-modal').innerText = 'Lihat Hasil Akhir';
+        else document.getElementById('btn-next-modal').innerText = 'Lanjut Bertempur';
+    }
+    
+    function nextModal() {
+        document.getElementById('explanation-modal').style.display = 'none';
+        if (lives <= 0) gameOver();
+        else { currentRound++; loadQuestion(); }
+    }
+    
+    // ========== MINIGAME KETIK ==========
+    function startTypingMinigame() {
+        minigameActive = true;
+        stopTimer();
+        document.getElementById('quiz-area').classList.remove('active');
+        document.getElementById('minigame-area').classList.add('active');
+        const timerSpanMG = document.getElementById('minigame-timer');
+        const inputField = document.getElementById('magic-phrase');
+        const submitBtn = document.getElementById('submit-phrase');
+        let mgTime = 8;
+        timerSpanMG.innerText = `⏱️ ${mgTime}s`;
+        inputField.value = '';
+        inputField.disabled = false;
+        submitBtn.disabled = false;
+        
+        const checkSubmit = () => {
+            if (!minigameActive) return;
+            const userText = inputField.value.trim().toLowerCase().replace(/['"]/g, '');
+            if (userText === "aku cinta farhan") {
+                clearInterval(mgTimerInterval);
+                minigameActive = false;
+                lives = Math.min(lives + 1, 5);
+                updateHUD();
+                addRandomPowerup();
+                new Audio("https://www.myinstants.com/media/sounds/correct-ding.mp3").play().catch(e=>{});
+                alert("✨ Berhasil! +1 Nyawa dan +1 Powerup Random ✨");
+                document.getElementById('minigame-area').classList.remove('active');
+                document.getElementById('quiz-area').classList.add('active');
+                justPlayedMini = true;
+                loadQuestion();
+            } else {
+                new Audio("https://www.myinstants.com/media/sounds/wrong-buzzer.mp3").play().catch(e=>{});
+                alert("❌ Kalimat salah! Coba lagi... (waktu terus berjalan)");
+                inputField.value = '';
+                inputField.focus();
+            }
+        };
+        submitBtn.onclick = checkSubmit;
+        inputField.onkeypress = (e) => { if (e.key === 'Enter') checkSubmit(); };
+        if (mgTimerInterval) clearInterval(mgTimerInterval);
+        mgTimerInterval = setInterval(() => {
+            if (!minigameActive) return;
+            mgTime--;
+            timerSpanMG.innerText = `⏱️ ${mgTime}s`;
+            if (mgTime <= 0) {
+                clearInterval(mgTimerInterval);
+                minigameActive = false;
+                inputField.disabled = true;
+                submitBtn.disabled = true;
+                new Audio("https://www.myinstants.com/media/sounds/wrong-buzzer.mp3").play().catch(e=>{});
+                alert("⏰ Waktu habis! Tidak mendapat hadiah.");
+                document.getElementById('minigame-area').classList.remove('active');
+                document.getElementById('quiz-area').classList.add('active');
+                justPlayedMini = true;
+                loadQuestion();
+            }
+        }, 1000);
+        inputField.focus();
+    }
+    
+    function gameOver() {
+        stopTimer();
+        if (mgTimerInterval) clearInterval(mgTimerInterval);
+        document.getElementById('bgm').pause();
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        const benar = Math.floor(score / 100);
+        const winCondition = (score >= 1400) || (benar >= 13 && lives > 0);
+        const goTitle = document.getElementById('go-title');
+        const goMessage = document.getElementById('go-message');
+        if (winCondition) {
+            goTitle.innerHTML = "🌸 CONGRATULATIONS PRINCESS! 🌸";
+            goTitle.style.color = "#f9e0a0";
+            goMessage.innerHTML = "✨ Kamu sudah membunuh Fitokimia! ✨<br>Azalia, pujaan hati para senyawa, kini takluk!";
+        } else {
+            goTitle.innerHTML = "💀 AZAL DITAKLUKKAN FITOKIMIA 💀";
+            goTitle.style.color = "#d98c8c";
+            goMessage.innerHTML = "Perbanyak latihan, pelajari kembali flavonoid, alkaloid, tanin... semangat!";
+        }
+        document.getElementById('go-score').innerText = `🏆 Skor Akhir: ${score}`;
+        document.getElementById('go-stats').innerHTML = `✅ Jawaban Benar: ${benar} / ${TOTAL_ROUNDS}`;
+        document.getElementById('game-over-screen').classList.add('active');
+    }
+    
+    function resetAndHome() {
+        stopTimer();
+        if (mgTimerInterval) clearInterval(mgTimerInterval);
+        minigameActive = false;
+        loadingLock = false;
+        currentRound = 0;
+        score = 0;
+        lives = 3;
+        correctStreak = 0;
+        doubleActive = false;
+        inventory = { freeze: true, fifty: true, extralife: 0, timebonus: 0, doublepoint: 0 };
+        freezeBtn.disabled = false; freezeBtn.style.opacity = '1';
+        fiftyBtn.disabled = false; fiftyBtn.style.opacity = '1';
+        updateHUD();
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('landing-page').classList.add('active');
+        document.getElementById('explanation-modal').style.display = 'none';
+        createParticles();
+    }
+    
+    function startGameSession() {
+        resetAndHome();
+        currentRound = 0;
+        score = 0;
+        lives = 3;
+        correctStreak = 0;
+        inventory = { freeze: true, fifty: true, extralife: 0, timebonus: 0, doublepoint: 0 };
+        freezeBtn.disabled = false; fiftyBtn.disabled = false;
+        updateHUD();
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('quiz-area').classList.add('active');
+        const bgm = document.getElementById('bgm');
+        // Lagu ceria dan upbeat (SoundHelix Song-1)
+        bgm.src = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+        bgm.volume = 0.15;
+        bgm.play().catch(e => console.log("BGM butuh interaksi user"));
+        loadQuestion();
+    }
+    
+    // Event listeners
+    document.getElementById('start-btn').addEventListener('click', startGameSession);
+    document.getElementById('home-btn').addEventListener('click', resetAndHome);
+    document.getElementById('btn-next-modal').addEventListener('click', nextModal);
+    freezeBtn.addEventListener('click', useFreezeInventory);
+    fiftyBtn.addEventListener('click', useFiftyInventory);
+</script>
+</body>
+</html>
